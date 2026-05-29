@@ -8,7 +8,8 @@ import EventsPage from "@/pages/EventsPage";
 import GalleryPage from "@/pages/Gallery/GalleryPage";
 import HomePage from "@/pages/HomePage";
 import PeoplePage from "@/pages/PeoplePage";
-import StatsPage from "@/pages/StatsPage";
+import StatsPage from "@/pages/Stats/StatsPage";
+import PersonalStatsPage from "@/pages/Stats/PersonalStats";
 import ActivityGalleryPage from "@/pages/Gallery/ActivityGalleryPage";
 import EventGalleryHubPage from "@/pages/Gallery/EventGalleryHubPage";
 import EventGalleryPage from "@/pages/Gallery/EventGalleryPage";
@@ -37,6 +38,7 @@ const AppRoutes = () => {
         path="/gallery/events/:slug"
         element={<EventGalleryPage />}
       />
+      <Route path="/stats/personal" element={<PersonalStatsPage />} />
     </Routes>
   );
 };

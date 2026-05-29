@@ -8,7 +8,7 @@ import EventsPage from "@/pages/EventsPage";
 import GalleryPage from "@/pages/GalleryPage";
 import HomePage from "@/pages/HomePage";
 import PeoplePage from "@/pages/PeoplePage";
-import StatsPage from "@/pages/StatsPage";
+import StatsPage from "@/pages/Stats/StatsPage";
 
 const AppRoutes = () => {
   return (

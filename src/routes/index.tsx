@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 
-import ActivitiesPage from "@/pages/ActivitiesPage";
+import ActivitiesPage from "@/pages/Activities/ActivitiesPage";
+import ActivityDetailPage from "@/pages/Activities/ActivityDetailPage";
 import AchievementsPage from "@/pages/AchievementsPage";
 import ContactPage from "@/pages/ContactPage";
 import EventsPage from "@/pages/EventsPage";
@@ -14,6 +15,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/activities" element={<ActivitiesPage />} />
+      <Route path="/activities/:slug" element={<ActivityDetailPage />} />
       <Route path="/stats" element={<StatsPage />} />
       <Route path="/gallery" element={<GalleryPage />} />
       <Route path="/events" element={<EventsPage />} />

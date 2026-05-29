@@ -19,12 +19,12 @@ const navLinks = [
 
 const Navbar = () => {
   return (
-    <header className="sticky top-0 z-50 border-b bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-white/10 bg-[#050816]/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         {/* Logo */}
         <Link
           to="/"
-          className="text-xl font-bold tracking-tight text-red-700"
+          className="text-xl font-bold tracking-tight text-cyan-400"
         >
           SAC Goa
         </Link>
@@ -35,7 +35,7 @@ const Navbar = () => {
             <Link
               key={link.href}
               to={link.href}
-              className="text-sm font-medium text-slate-700 transition hover:text-red-700"
+              className="text-sm font-medium text-slate-300 transition hover:text-cyan-400"
             >
               {link.label}
             </Link>
@@ -46,18 +46,21 @@ const Navbar = () => {
         <div className="md:hidden">
           <Sheet>
             <SheetTrigger asChild>
-              <button className="rounded-md p-2 hover:bg-slate-100">
+              <button className="rounded-md p-2 text-white transition hover:bg-white/5">
                 <Menu className="h-5 w-5" />
               </button>
             </SheetTrigger>
 
-            <SheetContent side="right" className="w-72">
+            <SheetContent
+              side="right"
+              className="w-72 border-white/10 bg-[#050816]"
+            >
               <div className="mt-8 flex flex-col gap-5">
                 {navLinks.map((link) => (
                   <Link
                     key={link.href}
                     to={link.href}
-                    className="text-base font-medium text-slate-700 hover:text-red-700"
+                    className="text-base font-medium text-slate-300 transition hover:text-cyan-400"
                   >
                     {link.label}
                   </Link>

@@ -8,7 +8,7 @@ const HomePage = () => {
       {/* 1. HERO SECTION */}
       <section 
         style={{
-          backgroundImage: `linear-gradient(to right, rgba(6, 9, 19, 0.9) 40%, rgba(6, 9, 19, 0.4)), url('../public/1-78.jpg.png')`, 
+          backgroundImage: `linear-gradient(to right, rgba(6, 9, 19, 0.9) 40%, rgba(6, 9, 19, 0.4)), url('../1-78.jpg.png')`, 
           backgroundSize: 'cover', 
           backgroundPosition: 'center', 
           backgroundRepeat: 'no-repeat'
@@ -67,7 +67,7 @@ const HomePage = () => {
             <div className="overflow-hidden rounded-xl border border-slate-800/70 bg-[#0b1120]/80 shadow-md">
               <div className="relative aspect-[16/10] w-full bg-slate-900 flex items-center justify-center border-b border-slate-800/50">
                 {/* ⬇️ CHANGE THE SRC ATTRIBUTE BELOW TO YOUR LOCAL BASKETBALL IMAGE PATH ⬇️ */}
-                <img src="../public/7-40.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
+                <img src="../7-40.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
                 
               </div>
               <div className="p-4 space-y-2">
@@ -87,7 +87,7 @@ const HomePage = () => {
             <div className="overflow-hidden rounded-xl border border-slate-800/70 bg-[#0b1120]/80 shadow-md">
               <div className="relative aspect-[16/10] w-full bg-slate-900 flex items-center justify-center border-b border-slate-800/50">
                 {/* ⬇️ CHANGE THE SRC ATTRIBUTE BELOW TO YOUR LOCAL GYM IMAGE PATH ⬇️ */}
-                <img src="../public/2-70.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
+                <img src="../2-70.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
                 
               </div>
               <div className="p-4 space-y-2">
@@ -107,7 +107,7 @@ const HomePage = () => {
             <div className="overflow-hidden rounded-xl border border-slate-800/70 bg-[#0b1120]/80 shadow-md">
               <div className="relative aspect-[16/10] w-full bg-slate-900 flex items-center justify-center border-b border-slate-800/50">
                 {/* ⬇️ CHANGE THE SRC ATTRIBUTE BELOW TO YOUR LOCAL TABLE TENNIS IMAGE PATH ⬇️ */}
-                <img src="../public/download.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
+                <img src="../download.png" alt="" className="absolute inset-0 w-full h-full object-cover" />
             
               </div>
               <div className="p-4 space-y-2">

@@ -8,7 +8,7 @@ import EventsPage from "@/pages/EventsPage";
 import GalleryPage from "@/pages/Gallery/GalleryPage";
 import HomePage from "@/pages/HomePage";
 import PeoplePage from "@/pages/PeoplePage";
-import StatsPage from "@/pages/StatsPage";
+import StatsPage from "@/pages/Stats/StatsPage";
 import ActivityGalleryPage from "@/pages/Gallery/ActivityGalleryPage";
 import EventGalleryHubPage from "@/pages/Gallery/EventGalleryHubPage";
 import EventGalleryPage from "@/pages/Gallery/EventGalleryPage";

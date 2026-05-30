@@ -181,3 +181,23 @@ The foundation phase is considered complete.
 - Current authentication is mock-only.
 - All data is temporary mock data.
 - Architecture is designed to support future Express + PostgreSQL integration.
+
+
+
+## Day 3 Progress
+
+### Gallery Module
+
+Implemented:
+
+- Activity Gallery Hub
+- Activity Gallery Detail Pages
+- Event Gallery Hub
+- Event Gallery Detail Pages
+- Image Lightbox Preview
+
+### UI Improvements
+
+- Unified dark theme across navbar and footer
+- Consistent visual styling with Activities module
+- Improved navigation flow between gallery sections

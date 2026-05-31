@@ -1,9 +1,11 @@
 import { useParams } from "react-router-dom";
 
 import { mockActivities } from "@/mock/mockActivities";
+import { useAuthStore } from "@/store/authStore";
 
 const ActivityDetailPage = () => {
   const { slug } = useParams();
+  const role = useAuthStore((state) => state.role);
 
   const activity = mockActivities.find(
     (item) => item.slug === slug
@@ -69,9 +71,16 @@ const ActivityDetailPage = () => {
 
             <div className="grid gap-6 md:grid-cols-3">
               <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-                <p className="text-sm text-slate-500">
-                  Opening Time
-                </p>
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm text-slate-500">
+                    Opening Time
+                  </p>
+                  {role === "admin" && (
+                    <button className="rounded-lg border border-cyan-400/30 bg-cyan-400/10 px-3 py-1 text-xs font-semibold text-cyan-200 transition hover:bg-cyan-400/20">
+                      Edit Timings
+                    </button>
+                  )}
+                </div>
 
                 <h3 className="mt-2 text-2xl font-bold">
                   {activity.timings[0].openTime}

@@ -5,6 +5,7 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import {
   overviewCards,
@@ -49,6 +50,13 @@ const StatsPage = () => {
           <button className="rounded-2xl border border-white/10 bg-[#081120] px-5 py-3 text-sm text-white/70 transition hover:border-cyan-400/30">
             This Semester
           </button>
+
+          <Link
+            to="/stats/sac"
+            className="rounded-2xl border border-cyan-500/40 bg-cyan-500/10 px-5 py-3 text-sm font-medium text-cyan-300 transition hover:bg-cyan-500/20"
+          >
+            SAC Stats
+          </Link>
 
           <button className="rounded-2xl border border-purple-500/40 bg-purple-500/10 px-5 py-3 text-sm font-medium text-purple-300 transition hover:bg-purple-500/20">
             Export Report

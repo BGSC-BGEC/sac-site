@@ -4,14 +4,17 @@ import ActivitiesPage from "@/pages/Activities/ActivitiesPage";
 import ActivityDetailPage from "@/pages/Activities/ActivityDetailPage";
 import AchievementsPage from "@/pages/AchievementsPage";
 import ContactPage from "@/pages/ContactPage";
-import EventsPage from "@/pages/EventsPage";
+import EventsPage from "@/pages/Events/EventsPage";
 import GalleryPage from "@/pages/Gallery/GalleryPage";
 import HomePage from "@/pages/HomePage";
-import PeoplePage from "@/pages/PeoplePage";
+import PeoplePage from "@/pages/People/PeoplePage";
 import StatsPage from "@/pages/Stats/StatsPage";
 import ActivityGalleryPage from "@/pages/Gallery/ActivityGalleryPage";
 import EventGalleryHubPage from "@/pages/Gallery/EventGalleryHubPage";
 import EventGalleryPage from "@/pages/Gallery/EventGalleryPage";
+import EventDetailPage from "@/pages/Events/EventDetailPage";
+import InchargesPage from "@/pages/People/InchargesPage";
+import CommitteePage from "@/pages/People/CommitteePage";
 
 const AppRoutes = () => {
   return (
@@ -36,6 +39,18 @@ const AppRoutes = () => {
       <Route
         path="/gallery/events/:slug"
         element={<EventGalleryPage />}
+      />
+      <Route
+        path="/events/:slug"
+        element={<EventDetailPage />}
+      />
+      <Route
+        path="/people/incharges"
+        element={<InchargesPage />}
+      />
+      <Route
+        path="/people/committee"
+        element={<CommitteePage />}
       />
     </Routes>
   );

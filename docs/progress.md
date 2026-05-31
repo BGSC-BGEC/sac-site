@@ -201,3 +201,199 @@ Implemented:
 - Unified dark theme across navbar and footer
 - Consistent visual styling with Activities module
 - Improved navigation flow between gallery sections
+
+# Day 4 Progress — Events · People · Achievements · Contact
+
+## Overview
+
+Day 4 focused on completing the remaining core navigation modules of the SAC Web Application and eliminating dead routes across the application.
+
+The objective was to transform placeholder pages into fully navigable demo-ready experiences while maintaining the established dark-theme design language.
+
+---
+
+## Events Module
+
+### Events Hub (`/events`)
+
+Implemented:
+
+* Hero section
+* Featured event section
+* Event timeline/list view
+* Event cards displaying:
+
+  * Title
+  * Description
+  * Date
+  * Venue
+* Navigation to event detail pages
+
+### Event Detail (`/events/:slug`)
+
+Implemented:
+
+* Event hero banner
+* Event description
+* Date and venue information
+* Gallery preview section
+* Direct navigation to event gallery pages
+
+### Integration
+
+Events are now connected with:
+
+* Event Gallery Hub
+* Event Gallery Detail Pages
+
+---
+
+## People Module
+
+### People Hub (`/people`)
+
+Implemented:
+
+* Navigation hub for personnel pages
+* Dedicated entry points for:
+
+  * SAC In-Charges
+  * SAC Committee
+
+### In-Charges (`/people/incharges`)
+
+Implemented:
+
+* Faculty in-charge card grid
+* Profile cards displaying:
+
+  * Photo
+  * Name
+  * Designation
+  * Department
+  * Email
+  * Phone
+
+### Committee (`/people/committee`)
+
+Implemented:
+
+* Student committee member grid
+* Reusable person card component
+* Contact information display
+
+---
+
+## Achievements Module
+
+### Achievements Page (`/achievements`)
+
+Implemented:
+
+* Achievement card grid
+* Achievement metadata:
+
+  * Student name
+  * Achievement title
+  * Activity
+  * Achievement level
+  * Date
+
+### Filters
+
+Implemented:
+
+* Level filter
+* Activity filter
+* Year filter
+
+The page now supports multi-dimensional filtering of achievement records.
+
+---
+
+## Contact Module
+
+### Contact Page (`/contact`)
+
+Implemented:
+
+* Contact form UI
+* SAC contact information
+* Address section
+* Phone section
+* Email section
+* Social links section
+
+---
+
+## UI Consistency Improvements
+
+Completed:
+
+* Unified dark theme across:
+
+  * Navbar
+  * Footer
+  * Events
+  * People
+  * Achievements
+  * Contact
+  * Gallery modules
+
+* Consistent card styling
+
+* Consistent spacing system
+
+* Consistent navigation patterns
+
+---
+
+## Routing Status
+
+The following routes are now implemented and navigable:
+
+* `/`
+
+* `/activities`
+
+* `/activities/:slug`
+
+* `/gallery`
+
+* `/gallery/:slug`
+
+* `/gallery/events`
+
+* `/gallery/events/:slug`
+
+* `/events`
+
+* `/events/:slug`
+
+* `/people`
+
+* `/people/incharges`
+
+* `/people/committee`
+
+* `/achievements`
+
+* `/contact`
+
+---
+
+## Day 4 Outcome
+
+Completed:
+
+* Events Module
+* Event Detail Pages
+* People Module
+* In-Charges Directory
+* Committee Directory
+* Achievements Module
+* Contact Module
+
+All planned Day 4 routes are implemented.
+
+Zero dead links remain within the current demo application scope.

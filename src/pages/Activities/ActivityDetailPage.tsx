@@ -130,3 +130,4 @@ function ActivityDetailPage() {
 }
 
 export default ActivityDetailPage;
+

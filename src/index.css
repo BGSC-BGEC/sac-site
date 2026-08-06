@@ -1,15 +1,781 @@
+/* ============================================================================
+   SAC — Student Activity Centre · src/index.css
+   Tailwind CSS 4.3 · React 19 · Vite 8
+   Single source of truth. No file in src/ may declare a color, radius,
+   shadow, duration or easing that is not a token in the @theme block below.
+   ========================================================================= */
+
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "@fontsource-variable/inter";
+/* Both variable faces are self-hosted: only the latin woff2 files ship,
+   declared by hand below. Importing the package CSS pulls cyrillic/greek/
+   vietnamese/latin-ext subsets we don't render — 4x the payload for
+   nothing. The two files are copied to public/fonts/ by the asset
+   pipeline (Part 7 §3.4); see @font-face below.                          */
 
-@custom-variant dark (&:is(.dark *));
+/* ── Variants ─────────────────────────────────────────────────────────────
+   The site is permanently dark and nothing ever adds a .dark class.
+   `dark:` is redefined to always match so the 17 dark:* utilities inside
+   src/components/ui/* apply. Deleting this rule would hand them to
+   prefers-color-scheme and make the UI flip with the visitor's OS.        */
+@custom-variant dark (&:where(:root, :root *));
 
-html {
-  font-family: "Inter", sans-serif;
+/* Nine data-* variants, verbatim from the removed shadcn/tailwind.css.
+   Every primitive in src/components/ui/* depends on these.               */
+@custom-variant data-open {
+  &:where([data-state="open"]),
+  &:where([data-open]:not([data-open="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-closed {
+  &:where([data-state="closed"]),
+  &:where([data-closed]:not([data-closed="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-checked {
+  &:where([data-state="checked"]),
+  &:where([data-checked]:not([data-checked="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-unchecked {
+  &:where([data-state="unchecked"]),
+  &:where([data-unchecked]:not([data-unchecked="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-selected {
+  &:where([data-selected="true"]) {
+    @slot;
+  }
+}
+@custom-variant data-disabled {
+  &:where([data-disabled="true"]),
+  &:where([data-disabled]:not([data-disabled="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-active {
+  &:where([data-state="active"]),
+  &:where([data-active]:not([data-active="false"])) {
+    @slot;
+  }
+}
+@custom-variant data-horizontal {
+  &:where([data-orientation="horizontal"]) {
+    @slot;
+  }
+}
+@custom-variant data-vertical {
+  &:where([data-orientation="vertical"]) {
+    @slot;
+  }
 }
 
-body {
-  background-color: white;
-  color: #0f172a;
+/* ── Theme ────────────────────────────────────────────────────────────────
+   `static` (not `inline`): guarantees every token is emitted to :root even
+   if no utility consumes it, and keeps color utilities as var() references
+   so .light-section can rebind them at runtime.                           */
+@theme static {
+  /* Delete Tailwind's 22-hue default palette. bg-white / text-cyan-400 /
+     text-slate-400 now generate nothing — by design.                      */
+  --color-*: initial;
+
+  /* Base ramp — hue ~187, derived from brand teal */
+  --color-void: #020a0c;
+  --color-abyss: #04141a;
+  --color-deep: #072226;
+  --color-raised: #0b2f35;
+  --color-teal-900: #003a42;
+  --color-teal-700: #00545f;
+  --color-teal-500: #0b7f8c;
+  --color-teal-300: #2fb6c0;
+
+  /* Accents — budget: volt <=10% of any viewport */
+  --color-volt: #d6fb00;
+  --color-volt-600: #a8c700;
+  --color-cream: #ecffb6;
+  --color-cream-dim: #cbe08f;
+
+  /* Text */
+  --color-fg: #f2f7e8;
+  --color-fg-muted: #93a79c;
+  --color-fg-faint: #5c706a;
+  --color-ink: #011014;
+
+  /* Lines — solid, never rgba */
+  --color-line: #14262a;
+  --color-line-strong: #1e3a3f;
+  --color-line-volt: #3d4a12;
+
+  /* Status */
+  --color-live: var(--color-volt);
+  --color-win: #34d399;
+
+  /* shadcn semantic layer — ALIASES ONLY, introduces no new color.
+     The 12 primitives in src/components/ui/* compile against these names;
+     without them bg-muted / ring-ring / text-foreground vanish silently.  */
+  --color-background: var(--color-void);
+  --color-foreground: var(--color-fg);
+  --color-card: var(--color-deep);
+  --color-card-foreground: var(--color-fg);
+  --color-popover: var(--color-deep);
+  --color-popover-foreground: var(--color-fg);
+  --color-primary: var(--color-volt);
+  --color-primary-foreground: var(--color-ink);
+  --color-secondary: var(--color-raised);
+  --color-secondary-foreground: var(--color-fg);
+  --color-muted: var(--color-raised);
+  --color-muted-foreground: var(--color-fg-muted);
+  --color-accent: var(--color-raised);
+  --color-accent-foreground: var(--color-fg);
+  /* No red exists in this palette. Invalid states are a volt ring plus a
+     literal message — never color alone.                                  */
+  --color-destructive: var(--color-volt);
+  --color-destructive-foreground: var(--color-ink);
+  --color-border: var(--color-line);
+  --color-input: var(--color-raised);
+  --color-ring: var(--color-volt);
+
+  /* Type */
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Archivo Variable", "Inter Variable", ui-sans-serif, sans-serif;
+
+  /* Display sizes carry their own leading, tracking and weight, so a
+     component writes `font-display text-display-l` and cannot get the
+     tracking wrong. Never a positive letter-spacing.                      */
+  --text-display-xl: clamp(3.25rem, 10.5vw, 9.5rem);
+  --text-display-xl--line-height: 0.92;
+  --text-display-xl--letter-spacing: -0.03em;
+  --text-display-xl--font-weight: 600;
+
+  --text-display-l: clamp(2.5rem, 6.5vw, 5.5rem);
+  --text-display-l--line-height: 0.92;
+  --text-display-l--letter-spacing: -0.03em;
+  --text-display-l--font-weight: 600;
+
+  --text-display-m: clamp(2rem, 4.2vw, 3.25rem);
+  --text-display-m--line-height: 0.96;
+  --text-display-m--letter-spacing: -0.03em;
+  --text-display-m--font-weight: 600;
+
+  --text-title: clamp(1.375rem, 2vw, 1.75rem);
+  --text-title--line-height: 1.15;
+  --text-title--letter-spacing: -0.02em;
+  --text-title--font-weight: 600;
+
+  --text-lead: clamp(1rem, 1.15vw, 1.1875rem);
+  --text-lead--line-height: 1.6;
+  --text-lead--letter-spacing: -0.005em;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.65;
+
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.45;
+
+  --text-eyebrow: 0.6875rem;
+  --text-eyebrow--line-height: 1;
+  --text-eyebrow--letter-spacing: 0.2em;
+  --text-eyebrow--font-weight: 600;
+
+  /* Geometry — six values. 3xl/4xl are aliases so the shadcn primitives
+     (rounded-3xl on input/badge/dropdown, rounded-4xl on button/card/
+     dialog) land on this scale without editing a single .tsx.            */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-2xl: 44px;
+  --radius-3xl: var(--radius-lg);
+  --radius-4xl: var(--radius-xl);
+
+  /* Elevation — three recipes. md/lg/xl alias lift for the primitives.
+     No component may write shadow-[...].                                 */
+  --shadow-*: initial;
+  --shadow-lift: 0 18px 44px -28px #000;
+  --glow-mix: 28%;
+  --shadow-glow: 0 0 44px -10px
+    color-mix(in oklab, var(--color-volt) var(--glow-mix), transparent);
+  --shadow-glow-teal: 0 0 56px -14px
+    color-mix(in oklab, var(--color-teal-500) 40%, transparent);
+  --shadow-md: var(--shadow-lift);
+  --shadow-lg: var(--shadow-lift);
+  --shadow-xl: var(--shadow-lift);
+
+  /* Motion. Bare `transition` now defaults to fast + out-quint, so an
+     un-tokenised duration cannot sneak in through the default.           */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --dur-fast: 180ms;
+  --dur-std: 420ms;
+  --dur-slow: 720ms;
+  --dur-hero: 1000ms;
+  --reveal-y: 24px;
+  --lift: 4px;
+  --default-transition-duration: var(--dur-fast);
+  --default-transition-timing-function: var(--ease-out-quint);
+
+  /* Layout + texture scalars */
+  --container: 1280px;
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --space-section: clamp(5rem, 11vh, 9rem);
+  --mesh-blur: 80px;
+  --grain-opacity: 0.045;
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    scrollbar-color: var(--color-line-strong) var(--color-void);
+  }
+
+  /* The dark shell. Replaces `body { background-color: white }`, which is
+     why an all-dark app used to sit on a white page.                      */
+  body {
+    min-height: 100dvh;
+    background-color: var(--color-void);
+    color: var(--color-fg-muted);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--color-fg);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--color-volt);
+    color: var(--color-ink);
+  }
+
+  /* Global focus ring. The shadcn primitives set outline-none and draw
+     their own ring from --color-ring, which is also volt — same look.    */
+  :focus-visible {
+    outline: 2px solid var(--color-volt);
+    outline-offset: 3px;
+  }
+
+  /* Dialog/Sheet scrim. Their `bg-black/30` no longer compiles now that
+     the default palette is deleted; this restores it in-system with no
+     edit to dialog.tsx or sheet.tsx.                                     */
+  [data-slot="dialog-overlay"],
+  [data-slot="sheet-overlay"] {
+    background-color: color-mix(in oklab, var(--color-void) 78%, transparent);
+  }
+
+  /* Global film grain. Fixed, above everything, never interactive. */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    opacity: var(--grain-opacity);
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+
+  /* Mobile: blur cap 48px, mesh never animates. */
+  @media (max-width: 47.999rem) {
+    :root {
+      --mesh-blur: 48px;
+    }
+    .mesh-volt::before,
+    .mesh-teal::before,
+    .mesh-cream::before {
+      animation: none;
+    }
+  }
+
+  /* Global damper. Layout still settles, it just arrives instantly.
+     motion/react components additionally branch on useReducedMotion();
+     GSAP scenes must check window.matchMedia in their own chapters.      */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /* Anchor nav offset */
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+  section[id] { scroll-margin-top: 5rem; }
+}
+
+/* ── Self-hosted fonts ────────────────────────────────────────────────────
+   Latin subset only. Paths are unhashed so index.html can <link rel=preload>
+   them. Both packages stay installed as the provenance of these two files;
+   nothing imports them.                                                  */
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/inter-latin-wght.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+@font-face {
+  font-family: "Archivo Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url("/fonts/archivo-latin-standard.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+/* ── Components ─────────────────────────────────────────────────────────── */
+@layer components {
+  /* Shared mesh chassis. `overflow: clip` and NOT `hidden` — hidden makes
+     the section a scroll container and breaks sticky children and the
+     GSAP pin in #focus.                                                  */
+  .mesh-volt,
+  .mesh-teal,
+  .mesh-cream {
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+  }
+
+  /* The bloom layer. isolation on the parent keeps z-index:-1 above the
+     parent's own background and below content. --mesh-strength is read
+     with a fallback and never declared, so any component override wins.  */
+  .mesh-volt::before,
+  .mesh-teal::before,
+  .mesh-cream::before {
+    content: "";
+    position: absolute;
+    inset: -25%;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--mesh-strength, 0.45);
+    filter: blur(var(--mesh-blur));
+  }
+
+  /* The one inverted section (Section 11). Rebinds tokens rather than
+     restyling: every text-fg-muted / border-line / bg-deep inside flips
+     with zero class changes. Works only because @theme is not `inline`. */
+  .light-section {
+    position: relative;
+    --color-fg: var(--color-ink);
+    --color-fg-muted: color-mix(in oklab, var(--color-ink) 68%, var(--color-cream));
+    --color-fg-faint: color-mix(in oklab, var(--color-ink) 44%, var(--color-cream));
+    --color-line: color-mix(in oklab, var(--color-ink) 14%, var(--color-cream));
+    --color-line-strong: color-mix(in oklab, var(--color-ink) 26%, var(--color-cream));
+    --color-deep: var(--color-cream-dim);
+    --color-raised: color-mix(in oklab, var(--color-cream-dim) 82%, var(--color-ink));
+    color: var(--color-fg-muted);
+  }
+
+  /* Volt on cream fails contrast — the ring inverts to deep teal. */
+  .light-section :focus-visible {
+    outline-color: var(--color-teal-900);
+  }
+
+  /* Local grain: multiply instead of overlay, so the tooth reads as ink
+     on paper rather than the blown-out highlight overlay gives on cream. */
+  .light-section::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0.07;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+
+  /* Hero local keyframes (slice 7 will exercise these) */
+  @keyframes cue-travel { from { transform: translateY(0); } to { transform: translateY(300%); } }
+  @keyframes dot-pulse  { from { transform: scale(1); opacity: .5; } to { transform: scale(2.4); opacity: 0; } }
+  @keyframes join-wipe {
+    from { clip-path: inset(100% 0 0 0 round var(--radius-2xl) var(--radius-2xl) 0 0); }
+    to   { clip-path: inset(0% 0 0 0 round 0 0 0 0); }
+  }
+  @keyframes pulse-marquee { to { transform: translate3d(calc(var(--row-w, 0) * -1px), 0, 0); } }
+  @keyframes pulse-ring { from { opacity: .5; transform: scale(1); } to { opacity: 0; transform: scale(2.4); } }
+
+  /* Light band helpers (Section 11). Solid mixed colours, never alpha. */
+  .rule-ink        { border-color: color-mix(in oklab, var(--color-ink) 15%, var(--color-cream)); }
+  .edge-ink        { border-color: color-mix(in oklab, var(--color-ink) 20%, var(--color-cream)); }
+  .edge-ink-strong { border-color: color-mix(in oklab, var(--color-ink) 45%, var(--color-cream)); }
+  .fill-ink-soft   { background-color: color-mix(in oklab, var(--color-ink) 6%, var(--color-cream)); }
+
+  /* The one card recipe — contract C2, referenced by name from motion.ts. */
+  .card-lift {
+    transition:
+      transform var(--dur-std) var(--ease-out-quint),
+      box-shadow var(--dur-std) var(--ease-out-quint),
+      background-color var(--dur-std) var(--ease-out-quint),
+      border-color var(--dur-std) var(--ease-out-quint);
+  }
+  .card-lift::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    z-index: 3;
+    background: var(--color-volt);
+    opacity: 0;
+    transition: opacity var(--dur-std) var(--ease-out-quint);
+  }
+  .card-lift img { transition: transform var(--dur-slow) var(--ease-out-quint); }
+  @media (hover: hover) and (pointer: fine) {
+    .card-lift:hover {
+      --glow-mix: 11%;
+      transform: translateY(calc(-1 * var(--lift)));
+      background-color: var(--color-raised);
+      border-color: var(--color-line-strong);
+      box-shadow: var(--shadow-lift), var(--shadow-glow);
+    }
+    .card-lift:hover::before { opacity: 1; }
+    .card-lift:hover img { transform: scale(1.04); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .card-lift, .card-lift img { transition: none; }
+    .card-lift:hover, .card-lift:hover img { transform: none; }
+  }
+
+  /* Portrait duotone passes (Section 7) */
+  .portrait-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 18%;
+    transform: scale(1.02);
+    filter: grayscale(1) contrast(1.06) brightness(0.94);
+    transition:
+      filter    var(--dur-std)  var(--ease-out-quint),
+      transform var(--dur-slow) var(--ease-out-quint);
+  }
+  .portrait-tone {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: var(--color-teal-900);
+    mix-blend-mode: color;
+    opacity: 0.25;
+    transition: opacity var(--dur-std) var(--ease-out-quint);
+  }
+  @media (hover: hover) and (min-width: 1024px) {
+    .group:hover .portrait-img  { filter: grayscale(0) contrast(1.02) brightness(1); transform: scale(1.06); }
+    .group:hover .portrait-tone { opacity: 0.10; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .portrait-img, .portrait-tone { transition-duration: 1ms; }
+    .group:hover .portrait-img    { transform: scale(1.02); }
+  }
+}
+
+/* ── Utilities ──────────────────────────────────────────────────────────── */
+
+/* From the removed shadcn/tailwind.css. The gallery reel needs it. */
+@utility no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* The content measure. Replaces mx-auto + max-w-* + px-* everywhere. */
+@utility shell {
+  width: 100%;
+  max-width: var(--container);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+@utility section-y {
+  padding-block: var(--space-section);
+}
+
+/* Volt bloom top-left off-canvas, teal upper-right, deep well bottom. */
+@utility mesh-volt {
+  background-color: var(--color-void);
+  &::before {
+    background-image:
+      radial-gradient(38% 44% at 6% -8%, var(--color-volt) 0%, transparent 70%),
+      radial-gradient(44% 40% at 94% 10%, var(--color-teal-700) 0%, transparent 72%),
+      radial-gradient(72% 46% at 50% 108%, var(--color-teal-900) 0%, transparent 76%);
+  }
+}
+
+/* Teal bloom upper-right, volt bloom mid-left. */
+@utility mesh-teal {
+  background-color: var(--color-void);
+  &::before {
+    background-image:
+      radial-gradient(46% 42% at 92% 4%, var(--color-teal-500) 0%, transparent 72%),
+      radial-gradient(34% 40% at 2% 52%, var(--color-volt) 0%, transparent 68%),
+      radial-gradient(64% 44% at 44% 104%, var(--color-teal-900) 0%, transparent 74%);
+  }
+}
+
+/* The one light section: volt top-left, teal bottom-right, on cream.
+   multiply keeps the blooms as pigment instead of haze.                 */
+@utility mesh-cream {
+  background-color: var(--color-cream);
+  &::before {
+    opacity: var(--mesh-strength, 0.32);
+    mix-blend-mode: multiply;
+    background-image:
+      radial-gradient(40% 44% at 4% -6%, var(--color-volt) 0%, transparent 70%),
+      radial-gradient(48% 46% at 96% 104%, var(--color-teal-500) 0%, transparent 74%);
+  }
+}
+
+/* Gallery rail inset */
+@utility rail-inset {
+  padding-inline-start: max(var(--gutter), calc((100vw - var(--container)) / 2));
+  padding-inline-end: var(--gutter);
+  scroll-padding-inline-start: max(var(--gutter), calc((100vw - var(--container)) / 2));
+}
+
+/* ── Hero-local keyframes ─────────────────────────────────────────────── */
+@keyframes cue-travel { from { transform: translateY(0); } to { transform: translateY(300%); } }
+@keyframes dot-pulse  { from { transform: scale(1); opacity: .5; } to { transform: scale(2.4); opacity: 0; } }
+
+.hero-cue { position: absolute; overflow: hidden; }
+.hero-cue::after {
+  content: ""; position: absolute; inset-inline: 0; top: 0; height: 33.333%;
+  background: linear-gradient(to bottom, transparent, var(--color-volt), transparent);
+  animation: cue-travel calc(var(--dur-hero) * 2) var(--ease-in-out-quart) infinite;
+}
+[data-pulse="true"] { position: relative; }
+[data-pulse="true"]::after {
+  content: ""; position: absolute; inset: 0; border-radius: 9999px;
+  background: var(--color-live);
+  animation: dot-pulse calc(var(--dur-hero) * 2) var(--ease-out-quint) infinite;
+}
+
+[data-inview="false"] .hero-loop,
+[data-inview="false"] .hero-loop::after { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-cue::after, [data-pulse="true"]::after { animation: none; }
+  .hero-cue::after { background: none; }
+}
+
+/* mobile: cheaper mesh blur */
+@media (max-width: 767px) { .mesh-volt::before { filter: blur(48px); } }
+
+/* ── Pulse strip ──────────────────────────────────────────────────────── */
+.pulse-strip { --marquee-speed: 55; }
+@media (min-width: 768px) and (max-width: 1023px) { .pulse-strip { --marquee-speed: 50; } }
+@media (max-width: 639px)  { .pulse-strip { --marquee-speed: 40; } }
+
+.pulse-viewport {
+  mask-image: linear-gradient(to right, transparent 0, black var(--mask), black calc(100% - var(--mask)), transparent 100%);
+  --mask: 96px;
+  overflow: hidden;
+}
+@media (max-width: 639px) { .pulse-viewport { --mask: 40px; } }
+
+.pulse-track {
+  animation: pulse-marquee calc(var(--row-w) / var(--marquee-speed) * 1s) linear infinite;
+  animation-play-state: paused;
+  will-change: transform;
+}
+.pulse-strip[data-inview="true"][data-paused="false"] .pulse-track { animation-play-state: running; }
+@media (hover: hover) {
+  .pulse-strip:hover .pulse-track { animation-play-state: paused; }
+}
+
+.pulse-dot::after {
+  content: ""; position: absolute; inset: 0; border-radius: 9999px;
+  background: var(--color-volt);
+  animation: pulse-ring calc(var(--dur-slow) * 2.5) var(--ease-out-quint) infinite;
+}
+.pulse-strip[data-inview="false"] .pulse-dot::after { animation-play-state: paused; }
+
+@keyframes pulse-marquee { to { transform: translate3d(calc(var(--row-w) * -1px), 0, 0); } }
+@keyframes pulse-ring { from { opacity: .5; transform: scale(1); } to { opacity: 0; transform: scale(2.4); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-track { animation: none; transform: none; width: 100%; }
+  .pulse-track > *:not(:first-child) { display: none; }
+  .pulse-row { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .5rem 1.5rem; width: 100%; }
+  .pulse-row > [data-sep] { display: none; }
+  .pulse-strip { height: auto; min-height: 64px; padding-block: 1rem; }
+  @media (min-width: 1024px) {
+    .pulse-row { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 2rem; }
+    .pulse-strip { height: 72px; padding-block: 0; }
+  }
+  .pulse-dot::after { animation: none; }
+}
+
+/* ── Card hover recipe (contract C2) ──────────────────────────────────── */
+@utility card-lift {
+  transition:
+    transform var(--dur-std) var(--ease-out-quint),
+    box-shadow var(--dur-std) var(--ease-out-quint),
+    background-color var(--dur-std) var(--ease-out-quint),
+    border-color var(--dur-std) var(--ease-out-quint);
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 1px;
+    z-index: 3;
+    background: var(--color-volt);
+    opacity: 0;
+    transition: opacity var(--dur-std) var(--ease-out-quint);
+  }
+  & img { transition: transform var(--dur-slow) var(--ease-out-quint); }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      --glow-mix: 11%;
+      transform: translateY(calc(-1 * var(--lift)));
+      background-color: var(--color-raised);
+      border-color: var(--color-line-strong);
+      box-shadow: var(--shadow-lift), var(--shadow-glow);
+    }
+    &:hover::before { opacity: 1; }
+    &:hover img { transform: scale(1.04); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &, & img { transition: none; }
+    &:hover, &:hover img { transform: none; }
+  }
+}
+
+/* ── Hero-local keyframes ─────────────────────────────────────────────── */
+@keyframes cue-travel { from { transform: translateY(0); } to { transform: translateY(300%); } }
+@keyframes dot-pulse  { from { transform: scale(1); opacity: .5; } to { transform: scale(2.4); opacity: 0; } }
+
+.hero-cue { position: absolute; overflow: hidden; }
+.hero-cue::after {
+  content: ""; position: absolute; inset-inline: 0; top: 0; height: 33.333%;
+  background: linear-gradient(to bottom, transparent, var(--color-volt), transparent);
+  animation: cue-travel calc(var(--dur-hero) * 2) var(--ease-in-out-quart) infinite;
+}
+[data-pulse="true"] { position: relative; }
+[data-pulse="true"]::after {
+  content: ""; position: absolute; inset: 0; border-radius: 9999px;
+  background: var(--color-live);
+  animation: dot-pulse calc(var(--dur-hero) * 2) var(--ease-out-quint) infinite;
+}
+
+[data-inview="false"] .hero-loop,
+[data-inview="false"] .hero-loop::after { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-cue::after, [data-pulse="true"]::after { animation: none; }
+  .hero-cue::after { background: none; }
+}
+
+/* mobile: cheaper mesh blur */
+@media (max-width: 767px) { .mesh-volt::before { filter: blur(48px); } }
+
+/* ── Pulse strip ──────────────────────────────────────────────────────── */
+.pulse-strip { --marquee-speed: 55; }
+@media (min-width: 768px) and (max-width: 1023px) { .pulse-strip { --marquee-speed: 50; } }
+@media (max-width: 639px)  { .pulse-strip { --marquee-speed: 40; } }
+
+.pulse-viewport {
+  mask-image: linear-gradient(to right, transparent 0, black var(--mask), black calc(100% - var(--mask)), transparent 100%);
+  --mask: 96px;
+}
+@media (max-width: 639px) { .pulse-viewport { --mask: 40px; } }
+
+.pulse-track {
+  animation: pulse-marquee calc(var(--row-w) / var(--marquee-speed) * 1s) linear infinite;
+  animation-play-state: paused;
+  will-change: transform;
+}
+.pulse-strip[data-inview="true"][data-paused="false"] .pulse-track { animation-play-state: running; }
+@media (hover: hover) {
+  .pulse-strip:hover .pulse-track { animation-play-state: paused; }
+}
+
+.pulse-dot::after {
+  content: ""; position: absolute; inset: 0; border-radius: 9999px;
+  background: var(--color-volt);
+  animation: pulse-ring calc(var(--dur-slow) * 2.5) var(--ease-out-quint) infinite;
+}
+.pulse-strip[data-inview="false"] .pulse-dot::after { animation-play-state: paused; }
+
+@keyframes pulse-marquee { to { transform: translate3d(calc(var(--row-w) * -1px), 0, 0); } }
+@keyframes pulse-ring { from { opacity: .5; transform: scale(1); } to { opacity: 0; transform: scale(2.4); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-track { animation: none; transform: none; width: 100%; }
+  .pulse-track > *:not(:first-child) { display: none; }
+  .pulse-row { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: .5rem 1.5rem; width: 100%; }
+  .pulse-row > [data-sep] { display: none; }
+  .pulse-strip { height: auto; min-height: 64px; padding-block: 1rem; }
+  @media (min-width: 1024px) {
+    .pulse-row { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 2rem; }
+    .pulse-strip { height: 72px; padding-block: 0; }
+  }
+  .pulse-dot::after { animation: none; }
+}
+
+/* ── FeaturedEvent status dot ─────────────────────────────────────────── */
+.status-dot { position: relative; inline-size: .5rem; block-size: .5rem; border-radius: 9999px; }
+.status-dot[data-mode="past"]     { background: transparent; box-shadow: inset 0 0 0 1px var(--color-line-strong); }
+.status-dot[data-mode="upcoming"],
+.status-dot[data-mode="today"]    { background: var(--color-live); }
+.status-dot[data-mode="today"]::after {
+  content: ""; position: absolute; inset: -2px; border-radius: 9999px;
+  background: var(--color-live);
+  animation: dot-pulse var(--dur-hero) var(--ease-out-quint) infinite;
+}
+[data-inview="false"] .status-dot::after { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .status-dot::after { animation: none; opacity: 0 } }
+
+/* ── FocusScene will-change (armed only) ──────────────────────────────── */
+[data-armed="true"] [data-frag],
+[data-armed="true"] [data-bloom],
+[data-armed="true"] [data-bg],
+[data-armed="true"] [data-statement] {
+  will-change: transform, opacity;
+}
+
+/* ── JoinCta (the one inverted light section) ─────────────────────────── */
+@keyframes join-wipe {
+  from { clip-path: inset(100% 0 0 0 round var(--radius-2xl) var(--radius-2xl) 0 0); }
+  to   { clip-path: inset(0% 0 0 0 round 0 0 0 0); }
+}
+.join-light { clip-path: inset(100% 0 0 0 round var(--radius-2xl) var(--radius-2xl) 0 0); }
+.join-light[data-revealed] { animation: join-wipe var(--dur-slow) var(--ease-in-out-quart) forwards; }
+.join-light :focus-visible { outline: 2px solid var(--color-ink); outline-offset: 3px; }
+.join-light::after {
+  content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  opacity: 0.07; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='jg'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23jg)'/%3E%3C/svg%3E");
+}
+@media (prefers-reduced-motion: reduce) {
+  .join-light, .join-light[data-revealed] { clip-path: none; animation: none; }
 }

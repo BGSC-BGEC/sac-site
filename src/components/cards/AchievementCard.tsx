@@ -1,37 +1,34 @@
+// src/components/cards/AchievementCard.tsx
+// Typographic, no image (zero records have imageUrl). Volt eyebrow level.
 import type { Achievement } from "@/types/achievement.types";
+import { formatDate } from "@/lib/format";
 
-interface AchievementCardProps {
-  achievement: Achievement;
-}
+const LEVEL_CHIP: Record<string, string> = {
+  National: "bg-volt text-ink border-transparent font-semibold",
+  State: "text-volt border-line-volt font-medium",
+  "Inter-NIT": "text-cream-dim border-line-strong font-medium",
+  Campus: "text-fg-muted border-line font-medium",
+};
+const CHIP_FALLBACK = LEVEL_CHIP.Campus;
 
-const AchievementCard = ({
-  achievement,
-}: AchievementCardProps) => {
+function AchievementCard({ achievement }: { achievement: Achievement }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#09111f] p-6">
-      <div className="mb-4">
-        <span className="rounded-full bg-cyan-400/10 px-3 py-1 text-sm text-cyan-400">
-          {achievement.level}
+    <article className="group relative overflow-hidden rounded-lg border border-line bg-deep p-6 transition-colors duration-(--dur-fast) ease-out-quint hover:border-line-strong hover:bg-raised">
+      <span aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-line-volt" />
+      <div className="mb-4 flex items-center justify-between">
+        <span className={`inline-flex items-center rounded-full border px-3.5 py-1.5 text-eyebrow uppercase tracking-[0.2em] ${LEVEL_CHIP[achievement.level] ?? CHIP_FALLBACK}`}>
+          <span className="sr-only">Level: </span>{achievement.level}
         </span>
       </div>
-
-      <h3 className="text-xl font-semibold text-white">
-        {achievement.title}
-      </h3>
-
-      <p className="mt-3 text-slate-300">
-        {achievement.studentName}
-      </p>
-
-      <p className="mt-1 text-slate-400">
+      <h3 className="font-display text-title font-semibold tracking-[-0.03em] text-fg">{achievement.title}</h3>
+      <p className="mt-2 text-body text-fg-muted">{achievement.studentName}</p>
+      <p className="mt-3 text-meta text-fg-muted">
         {achievement.activityName}
+        <span aria-hidden="true" className="mx-2 text-fg-faint">·</span>
+        <time dateTime={achievement.achievedAt}>{formatDate(achievement.achievedAt)}</time>
       </p>
-
-      <p className="mt-4 text-sm text-slate-500">
-        {achievement.achievedAt}
-      </p>
-    </div>
+    </article>
   );
-};
+}
 
 export default AchievementCard;

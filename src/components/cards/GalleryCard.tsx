@@ -1,42 +1,37 @@
+// src/components/cards/GalleryCard.tsx
 import { Link } from "react-router-dom";
+import { MediaFrame } from "@/components/primitives/MediaFrame";
 
-interface GalleryCardProps {
+interface Props {
+  to: string;
   title: string;
-  slug: string;
   imageUrl: string;
-  imageCount: number;
+  count: number;
+  caption?: string;
 }
 
-const GalleryCard = ({
-  title,
-  slug,
-  imageUrl,
-  imageCount,
-}: GalleryCardProps) => {
+function GalleryCard({ to, title, imageUrl, count, caption }: Props) {
   return (
     <Link
-      to={`/gallery/${slug}`}
-      className="group overflow-hidden rounded-2xl border border-white/10 bg-[#09111f] transition-all duration-300 hover:border-cyan-400/50"
+      to={to}
+      className="group block overflow-hidden rounded-lg border border-line bg-deep transition-colors duration-(--dur-std) ease-out-quint hover:border-line-strong motion-safe:hover:-translate-y-(--lift)"
     >
-      <div className="aspect-[4/3] overflow-hidden">
-        <img
-          src={imageUrl}
-          alt={title}
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-      </div>
-
-      <div className="p-4">
-        <h3 className="text-lg font-semibold text-white">
-          {title}
-        </h3>
-
-        <p className="mt-1 text-sm text-slate-400">
-          {imageCount} images
-        </p>
-      </div>
+      <MediaFrame
+        src={imageUrl}
+        alt={title}
+        ratio="4/5"
+        radius="none"
+        width={560}
+        className="transition-transform duration-(--dur-slow) ease-out-quint motion-safe:group-hover:scale-[1.03]"
+      />
+      <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-void to-transparent" />
+      <span className="absolute bottom-4 left-4 right-4">
+        <span className="font-display text-title font-semibold text-cream">{title}</span>
+        {caption && <span className="mt-1 block text-meta text-fg-muted">{caption}</span>}
+        <span className="mt-1 block text-meta tabular-nums text-fg-faint">{count} frames</span>
+      </span>
     </Link>
   );
-};
+}
 
 export default GalleryCard;

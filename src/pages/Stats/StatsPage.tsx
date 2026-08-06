@@ -1,311 +1,265 @@
-import {
-  Activity,
-  Clock3,
-  Star,
-  Trophy,
-  Users,
-} from "lucide-react";
+// src/pages/Stats/StatsPage.tsx
 
-import {
-  overviewCards,
-  topActivities,
-} from "@/mock/mockStats";
-
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import { overviewCards, participationData, categoryData, topActivities } from "@/mock/mockStats";
+import { getTrendSeries } from "@/lib/content";
+import { formatGrowth } from "@/lib/format";
 import ActivityBarChart from "@/components/charts/ActivityBarChart";
-import ParticipationPieChart from "@/components/charts/ParticipationPieChart";
 import ActivityTrendChart from "@/components/charts/ActivityTrendChart";
+import ParticipationPieChart from "@/components/charts/ParticipationPieChart";
 
-const iconMap = {
-  users: Users,
-  clock: Clock3,
-  basketball: Trophy,
-  activity: Activity,
-  star: Star,
-};
+const DELTA_ICON = { up: "↑", down: "↓", flat: "→", none: null } as const;
+const DELTA_COLOR = {
+  up: "text-win",
+  down: "text-fg-muted",
+  flat: "text-fg-muted",
+  none: "text-fg-muted",
+} as const;
 
-const StatsPage = () => {
+function StatsPage() {
+  useDocumentTitle("Participation stats · SAC Goa", "Participation, session volume and monthly trend across SAC activities. Eleven months recorded, January to November.");
+  const [sort, setSort] = useState<"most" | "alpha">("most");
+
+  const sortedParticipation = sort === "most"
+    ? [...participationData].sort((a, b) => b.participants - a.participants)
+    : [...participationData].sort((a, b) => a.name.localeCompare(b.name));
+
   return (
-    <section className="min-h-screen bg-[#030712] px-6 py-10 text-white">
-      {/* Header */}
-      <div className="mb-10 flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-        <div>
-          <p className="mb-3 text-sm text-white/40">
-            Home {" > "} Stats {" > "} Overview
-          </p>
-
-          <h1 className="text-4xl font-bold tracking-tight">
-            Physical Activity Overview
+    <>
+      {/* PageIntro */}
+      <section
+        className="mesh-teal relative isolate overflow-hidden bg-void
+                   pt-[calc(4.5rem+clamp(2rem,6vh,4rem))] pb-[var(--space-section)]"
+        style={{ "--mesh-strength": 0.35 } as React.CSSProperties}
+      >
+        <div className="relative z-10 mx-auto w-full max-w-(--container) px-(--gutter)">
+          <nav aria-label="Breadcrumb" className="mb-8">
+            <ol className="flex flex-wrap items-center gap-2 text-meta text-fg-muted">
+              <li className="flex items-center gap-2">
+                <Link to="/" className="hover:text-volt transition-colors">Home</Link>
+                <span aria-hidden="true" className="text-fg-faint">/</span>
+              </li>
+              <li><span aria-current="page" className="text-fg">Stats</span></li>
+            </ol>
+          </nav>
+          <p className="text-eyebrow uppercase tracking-[0.2em] text-volt mb-4">PARTICIPATION</p>
+          <h1 className="font-display text-display-m font-semibold tracking-[-0.03em] leading-[0.92] text-cream max-w-[22ch]">
+            The numbers behind the noise
           </h1>
-
-          <p className="mt-3 text-white/60">
-            Campus-wide participation and engagement.
+          <p className="mt-6 max-w-[62ch] text-lead text-fg-muted">
+            Participation logged across SAC facilities: who turns up, how often, and where the hours land.
+          </p>
+          <p className="mt-6 text-meta text-fg-muted">Jan – Nov · 7 activities</p>
+          <p className="mt-3 border-l-2 border-line-volt pl-3 text-meta text-cream-dim">
+            Sample data for layout review. These figures are not live campus records.
           </p>
         </div>
+      </section>
 
-        <div className="flex items-center gap-4">
-          <button className="rounded-2xl border border-white/10 bg-[#081120] px-5 py-3 text-sm text-white/70 transition hover:border-cyan-400/30">
-            This Month
-          </button>
-          <button className="rounded-2xl border border-white/10 bg-[#081120] px-5 py-3 text-sm text-white/70 transition hover:border-cyan-400/30">
-            This Semester
-          </button>
-
-          <button className="rounded-2xl border border-purple-500/40 bg-purple-500/10 px-5 py-3 text-sm font-medium text-purple-300 transition hover:bg-purple-500/20">
-            Export Report
-          </button>
-        </div>
-      </div>
-
-      {/* Overview Cards */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-5">
-        {overviewCards.map((card) => {
-          const Icon =
-            iconMap[card.icon as keyof typeof iconMap];
-
-          return (
-            <div
-              key={card.id}
-              className="group rounded-3xl border border-white/10 bg-[#081120] p-6 transition duration-300 hover:-translate-y-1 hover:border-cyan-400/30 hover:shadow-[0_0_30px_rgba(34,211,238,0.15)]"
-            >
-              <div className="mb-5 flex items-center justify-between">
-                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/5">
-                  <Icon className="h-7 w-7 text-purple-400" />
+      {/* Stat cards */}
+      <section className="bg-abyss section-y">
+        <div className="shell">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-5">
+            {overviewCards.map((card) => {
+              const g = formatGrowth(card.growth);
+              const icon = DELTA_ICON[g.dir];
+              return (
+                <div key={card.id} className="border-l border-line pl-5 flex flex-col gap-1">
+                  <p className="font-display text-display-m tabular-nums text-fg">{card.value}</p>
+                  <p className="text-eyebrow uppercase tracking-[0.2em] text-fg-muted">{card.title}</p>
+                  {icon && (
+                    <p className={`text-meta ${DELTA_COLOR[g.dir]}`}>
+                      <span aria-hidden="true">{icon}</span> {g.label}
+                      <span className="sr-only">{g.dir === "up" ? "up" : g.dir === "down" ? "down" : "no change"}</span>
+                    </p>
+                  )}
+                  {!icon && (
+                    <p className="text-meta text-fg-faint">{g.label}</p>
+                  )}
                 </div>
-              </div>
-
-              <h2 className="text-3xl font-bold">
-                {card.value}
-              </h2>
-
-              <p className="mt-1 text-sm text-white/60">
-                {card.title}
-              </p>
-
-              <p className="mt-4 text-sm text-emerald-400">
-                ↑ {card.growth}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Charts */}
-      <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
-        {/* Bar Chart */}
-        <div className="rounded-3xl border border-white/10 bg-[#081120] p-6">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-semibold">
-                Participation by Activity
-              </h3>
-
-              <p className="mt-1 text-sm text-white/50">
-                Most active sports and programs.
-              </p>
-            </div>
-
-            <button className="rounded-xl border border-white/10 px-4 py-2 text-sm text-white/60">
-              Participants
-            </button>
+              );
+            })}
           </div>
-
-          <ActivityBarChart />
         </div>
+      </section>
 
-        {/* Pie Chart */}
-        <div className="rounded-3xl border border-white/10 bg-[#081120] p-6">
+      {/* Participation by activity */}
+      <section className="bg-void section-y" aria-labelledby="participation-heading">
+        <div className="shell">
           <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-semibold">
-                Participation by Category
-              </h3>
-
-              <p className="mt-1 text-sm text-white/50">
-                Distribution of activities.
-              </p>
+            <h2 id="participation-heading" className="font-display text-title font-semibold tracking-[-0.03em] text-fg">
+              Participation by activity
+            </h2>
+            <div role="group" aria-label="Sort" className="flex gap-2">
+              <button
+                type="button"
+                aria-pressed={sort === "most"}
+                onClick={() => setSort("most")}
+                className={`inline-flex h-10 items-center rounded-full px-4 text-meta transition-colors duration-(--dur-fast) ease-out-quint ${
+                  sort === "most" ? "bg-volt text-ink" : "border border-line text-fg-muted hover:text-fg"
+                }`}
+              >
+                Most first
+              </button>
+              <button
+                type="button"
+                aria-pressed={sort === "alpha"}
+                onClick={() => setSort("alpha")}
+                className={`inline-flex h-10 items-center rounded-full px-4 text-meta transition-colors duration-(--dur-fast) ease-out-quint ${
+                  sort === "alpha" ? "bg-volt text-ink" : "border border-line text-fg-muted hover:text-fg"
+                }`}
+              >
+                A–Z
+              </button>
             </div>
-
-            <button className="rounded-xl border border-white/10 px-4 py-2 text-sm text-white/60">
-              This Month
-            </button>
           </div>
-
-          <ParticipationPieChart />
-        </div>
-
-        {/* Trend Chart */}
-        <div className="rounded-3xl border border-white/10 bg-[#081120] p-6">
-          <div className="mb-6 flex items-center justify-between">
-            <div>
-              <h3 className="text-xl font-semibold">
-                Activity Trend
-              </h3>
-
-              <p className="mt-1 text-sm text-white/50">
-                Participation growth over months.
-              </p>
-            </div>
-
-            <button className="rounded-xl border border-white/10 px-4 py-2 text-sm text-white/60">
-              This Month
-            </button>
-          </div>
-
-          <ActivityTrendChart />
-        </div>
-      </div>
-
-      {/* Bottom Section */}
-      <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
-        {/* Table */}
-        <div className="rounded-3xl border border-white/10 bg-[#081120] p-6 xl:col-span-2">
-          <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-xl font-semibold">
-              Top Activities
-            </h3>
-
-            <button className="text-sm text-purple-400 transition hover:text-purple-300">
-              View All
-            </button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+          <ActivityBarChart key={sort} />
+          <details className="mt-6 border-t border-line pt-6">
+            <summary className="min-h-12 cursor-pointer py-3 text-meta text-fg-muted hover:text-fg transition-colors">
+              ▾ Read as a table
+            </summary>
+            <table className="mt-4 w-full text-meta">
+              <caption className="pb-4 text-left text-fg-muted">Participation by activity, 2026</caption>
               <thead>
-                <tr className="border-b border-white/10 text-left text-sm text-white/40">
-                  <th className="pb-4 font-medium">#</th>
-                  <th className="pb-4 font-medium">Activity</th>
-                  <th className="pb-4 font-medium">
-                    Participants
-                  </th>
-                  <th className="pb-4 font-medium">
-                    Sessions
-                  </th>
-                  <th className="pb-4 font-medium">
-                    Hours Logged
-                  </th>
-                  <th className="pb-4 font-medium">
-                    Avg / Week
-                  </th>
+                <tr>
+                  <th scope="col" className="pb-3 text-eyebrow uppercase tracking-[0.2em] text-fg-muted">Activity</th>
+                  <th scope="col" className="pb-3 text-right text-eyebrow uppercase tracking-[0.2em] text-fg-muted">Participants</th>
                 </tr>
               </thead>
-
               <tbody>
-                {topActivities.map((activity) => (
-                  <tr
-                    key={activity.rank}
-                    className="border-b border-white/5 text-sm transition hover:bg-white/[0.02]"
-                  >
-                    <td className="py-5 text-white/70">
-                      {activity.rank}
-                    </td>
-
-                    <td className="py-5 font-medium">
-                      {activity.activity}
-                    </td>
-
-                    <td className="py-5 text-white/70">
-                      {activity.participants}
-                    </td>
-
-                    <td className="py-5 text-white/70">
-                      {activity.sessions}
-                    </td>
-
-                    <td className="py-5 text-white/70">
-                      {activity.hours}
-                    </td>
-
-                    <td className="py-5 text-white/70">
-                      {activity.avg}
-                    </td>
+                {sortedParticipation.map((d) => (
+                  <tr key={d.name} className="border-b border-line">
+                    <td className="py-2.5 text-fg-muted">{d.name}</td>
+                    <td className="py-2.5 text-right font-display tabular-nums text-fg">{d.participants.toLocaleString("en-IN")}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+          </details>
+        </div>
+      </section>
+
+      {/* Programme share + Monthly trend */}
+      <section className="bg-abyss section-y">
+        <div className="shell">
+          <div className="grid gap-8 lg:grid-cols-2">
+            {/* Pie */}
+            <div>
+              <h2 className="font-display text-title font-semibold tracking-[-0.03em] text-fg mb-1">Programme share</h2>
+              <p className="text-meta text-fg-muted mb-6">Share of logged participation by programme type.</p>
+              <ParticipationPieChart />
+              <ul className="mt-4 space-y-1 text-meta text-fg-muted">
+                {categoryData.map((c, i) => (
+                  <li key={c.name} className="flex items-center gap-2">
+                    <span aria-hidden="true" className="inline-block size-2 rounded-full" style={{ backgroundColor: [chart_series(2), chart_series(1), "var(--color-teal-700)"][i] }} />
+                    {c.name}: {c.value}%
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-meta text-fg-faint">Recreation covers activities not yet individually listed. Programme type, not an activity category.</p>
+              <details className="mt-4 border-t border-line pt-4">
+                <summary className="min-h-12 cursor-pointer py-3 text-meta text-fg-muted hover:text-fg transition-colors">▾ Read as a table</summary>
+                <table className="mt-4 w-full text-meta">
+                  <caption className="pb-4 text-left text-fg-muted">Programme share</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="pb-3 text-eyebrow uppercase tracking-[0.2em] text-fg-muted">Programme</th>
+                      <th scope="col" className="pb-3 text-right text-eyebrow uppercase tracking-[0.2em] text-fg-muted">Share</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categoryData.map((c) => (
+                      <tr key={c.name} className="border-b border-line">
+                        <td className="py-2.5 text-fg-muted">{c.name}</td>
+                        <td className="py-2.5 text-right font-display tabular-nums text-fg">{c.value}%</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </details>
+            </div>
+
+            {/* Trend */}
+            <div>
+              <h2 className="font-display text-title font-semibold tracking-[-0.03em] text-fg mb-1">Monthly trend</h2>
+              <p className="text-meta text-fg-muted mb-6">January to November. December is not in the dataset.</p>
+              <ActivityTrendChart />
+              <details className="mt-4 border-t border-line pt-4">
+                <summary className="min-h-12 cursor-pointer py-3 text-meta text-fg-muted hover:text-fg transition-colors">▾ Read as a table</summary>
+                <table className="mt-4 w-full text-meta">
+                  <caption className="pb-4 text-left text-fg-muted">Monthly participation, January to November</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col" className="pb-3 text-eyebrow uppercase tracking-[0.2em] text-fg-muted">Month</th>
+                      <th scope="col" className="pb-3 text-right text-eyebrow uppercase tracking-[0.2em] text-fg-muted">Participants</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <TrendRows />
+                  </tbody>
+                </table>
+              </details>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Insights */}
-        <div className="rounded-3xl border border-white/10 bg-[#081120] p-6">
+      {/* Top activities table */}
+      <section className="bg-void section-y">
+        <div className="shell">
           <div className="mb-6 flex items-center justify-between">
-            <h3 className="text-xl font-semibold">
-              Engagement Insights
-            </h3>
-
-            <button className="text-sm text-purple-400 transition hover:text-purple-300">
-              View All
-            </button>
+            <h2 className="font-display text-title font-semibold tracking-[-0.03em] text-fg">Top activities</h2>
+            <Link to="/activities" className="inline-flex h-11 items-center rounded-full border border-line-strong px-6 text-meta text-fg hover:border-line-volt hover:text-volt transition-colors">
+              All activities
+              <ArrowRight aria-hidden="true" className="ml-2 size-4 text-volt" />
+            </Link>
           </div>
-
-          <div className="space-y-5">
-            <div className="flex items-start gap-4 rounded-2xl border border-white/5 bg-white/[0.02] p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10">
-                <Users className="h-6 w-6 text-purple-400" />
-              </div>
-
-              <div className="flex-1">
-                <h4 className="font-medium">
-                  High Participation Growth
-                </h4>
-
-                <p className="mt-1 text-sm text-white/50">
-                  Active student participation increased by
-                  12.5% this month.
-                </p>
-              </div>
-
-              <span className="text-emerald-400">
-                ↑ 12.5%
-              </span>
-            </div>
-
-            <div className="flex items-start gap-4 rounded-2xl border border-white/5 bg-white/[0.02] p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-500/10">
-                <Clock3 className="h-6 w-6 text-cyan-400" />
-              </div>
-
-              <div className="flex-1">
-                <h4 className="font-medium">
-                  More Hours Logged
-                </h4>
-
-                <p className="mt-1 text-sm text-white/50">
-                  Total hours logged increased by 8.2%
-                  compared to last month.
-                </p>
-              </div>
-
-              <span className="text-emerald-400">
-                ↑ 8.2%
-              </span>
-            </div>
-
-            <div className="flex items-start gap-4 rounded-2xl border border-white/5 bg-white/[0.02] p-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
-                <Activity className="h-6 w-6 text-emerald-400" />
-              </div>
-
-              <div className="flex-1">
-                <h4 className="font-medium">
-                  Consistent Engagement
-                </h4>
-
-                <p className="mt-1 text-sm text-white/50">
-                  Average sessions per week improved by 0.4
-                  this month.
-                </p>
-              </div>
-
-              <span className="text-emerald-400">
-                ↑ 0.4
-              </span>
-            </div>
-          </div>
+          <table className="w-full text-meta">
+            <caption className="sr-only">Top activities by participation</caption>
+            <thead>
+              <tr className="border-b border-line-strong">
+                <th scope="col" className="pb-3 text-left text-eyebrow uppercase tracking-[0.2em] text-fg-muted">#</th>
+                <th scope="col" className="pb-3 text-left text-eyebrow uppercase tracking-[0.2em] text-fg-muted">Activity</th>
+                <th scope="col" className="pb-3 text-right text-eyebrow uppercase tracking-[0.2em] text-fg-muted">Participants</th>
+              </tr>
+            </thead>
+            <tbody>
+              {topActivities.map((a, i) => (
+                <tr key={a.activity} className="border-b border-line">
+                  <td className="py-3 font-display tabular-nums text-fg-faint">{i + 1}</td>
+                  <td className="py-3 text-fg">{a.activity}</td>
+                  <td className="py-3 text-right font-display tabular-nums text-fg">{a.participants}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
-};
+}
+
+function chart_series(i: number): string {
+  return ["var(--color-volt)", "var(--color-teal-500)", "var(--color-teal-300)"][i];
+}
+
+function TrendRows() {
+  const trend = getTrendSeries();
+  return (
+    <>
+      {trend.map((d) => (
+        <tr key={d.month} className="border-b border-line">
+          <td className="py-2.5 text-fg-muted">{d.month}</td>
+          <td className="py-2.5 text-right font-display tabular-nums text-fg">
+            {d.value == null ? <span className="text-fg-faint">Not recorded</span> : d.value.toLocaleString("en-IN")}
+          </td>
+        </tr>
+      ))}
+    </>
+  );
+}
 
 export default StatsPage;

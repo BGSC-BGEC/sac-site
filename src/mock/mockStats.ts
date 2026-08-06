@@ -27,7 +27,7 @@ export const overviewCards = [
     id: 4,
     title: "Avg. Sessions / Week",
     value: "3.6",
-    growth: "+0.4 from last month",
+    growth: "+0.4",
     icon: "activity",
     color: "green",
   },
@@ -35,7 +35,7 @@ export const overviewCards = [
     id: 5,
     title: "Activities Conducted",
     value: "24",
-    growth: "+6 from last month",
+    growth: "+6",
     icon: "star",
     color: "yellow",
   },
@@ -57,18 +57,11 @@ export const categoryData = [
   { name: "Recreation", value: 15 },
 ];
 
-export const trendData = [
-  { month: "Jan", value: 1000 },
-  { month: "Feb", value: 1350 },
-  { month: "Mar", value: 1250 },
-  { month: "Apr", value: 1450 },
-  { month: "May", value: 1300 },
-  { month: "Jun", value: 1700 },
-  { month: "Jul", value: 1450 },
-  { month: "Aug", value: 1000 },
-  { month: "Sep", value: 1150 },
-  { month: "Oct", value: 1500 },
-  { month: "Nov", value: 1200 },
+// R30: month is derived from today, never authored. A chart that shows next
+// month as history is a bug; a hardcoded window is the same bug on a delay.
+// `getTrendSeries()` in src/lib/content.ts computes labels from `now`.
+export const trendData: number[] = [
+  1000, 1350, 1250, 1450, 1300, 1700, 1450, 1000, 1150, 1500, 1200,
 ];
 
 export const topActivities = [

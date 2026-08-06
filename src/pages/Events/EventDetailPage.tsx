@@ -1,111 +1,121 @@
-import { ArrowLeft, CalendarDays, MapPin } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+// src/pages/Events/EventDetailPage.tsx
+import { useParams, Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import { getEventBySlug, getGalleryCounts, eventStatus } from "@/lib/content";
+import { formatDate } from "@/lib/format";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import NotFoundPage from "@/pages/NotFoundPage";
 
-import { mockEventGallery } from "@/mock/mockEventGallery";
-import { mockEvents } from "@/mock/mockEvents";
-
-const EventDetailPage = () => {
+function EventDetailPage() {
   const { slug } = useParams();
+  const event = slug ? getEventBySlug(slug) : undefined;
 
-  const event = mockEvents.find(
-    (item) => item.slug === slug
+  useDocumentTitle(
+    event ? `${event.title} · Events · SAC Goa` : "Not found · Events · SAC Goa",
+    event ? `${event.description} ${formatDate(event.startDate)} at ${event.venue}.` : undefined,
   );
 
-  const gallery = mockEventGallery.find(
-    (item) => item.eventSlug === slug
-  );
+  if (!event) return <NotFoundPage kind="event" />;
 
-  if (!event) {
-    return (
-      <section className="min-h-screen bg-[#050816] py-20">
-        <div className="mx-auto max-w-7xl px-4">
-          <h1 className="text-3xl font-bold text-white">
-            Event Not Found
-          </h1>
-        </div>
-      </section>
-    );
-  }
+  const status = eventStatus(event);
+  const galleryCount = getGalleryCounts("event")[event.slug] ?? 0;
+  const statusLabel = status === "today" ? "Happening today" : status === "upcoming" ? "Upcoming" : "Concluded";
+  const eyebrow = status === "today" ? "TODAY" : status === "upcoming" ? "UPCOMING" : "ALREADY RUN";
 
   return (
-    <section className="min-h-screen bg-[#050816] py-16">
-      <div className="mx-auto max-w-7xl px-4">
-        <Link
-          to="/events"
-          className="mb-8 inline-flex items-center gap-2 text-slate-400 transition hover:text-cyan-400"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Events
-        </Link>
-
-        {/* Hero */}
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#09111f]">
-          <img
-            src={event.coverImageUrl}
-            alt={event.title}
-            className="h-[400px] w-full object-cover"
-          />
-
-          <div className="p-8">
-            <h1 className="text-4xl font-bold text-white">
-              {event.title}
-            </h1>
-
-            <p className="mt-4 max-w-3xl text-slate-400">
-              {event.description}
-            </p>
-
-            <div className="mt-6 flex flex-col gap-3 text-slate-300">
-              <div className="flex items-center gap-2">
-                <CalendarDays className="h-4 w-4 text-cyan-400" />
-                {event.startDate}
-              </div>
-
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-cyan-400" />
-                {event.venue}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Gallery Preview */}
-        {gallery && (
-          <div className="mt-16">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-2xl font-semibold text-white">
-                Gallery Preview
-              </h2>
-
+    <>
+      {/* PageIntro */}
+      <section
+        className="mesh-teal relative isolate overflow-hidden bg-void
+                   pt-[calc(4.5rem+clamp(2rem,6vh,4rem))] pb-[var(--space-section)]"
+        style={{ "--mesh-strength": 0.35 } as React.CSSProperties}
+      >
+        <div className="relative z-10 mx-auto w-full max-w-(--container) px-(--gutter)">
+          <nav aria-label="Breadcrumb" className="mb-8">
+            <ol className="flex flex-wrap items-center gap-2 text-meta text-fg-muted">
+              <li className="flex items-center gap-2">
+                <Link to="/" className="hover:text-volt transition-colors">Home</Link>
+                <span aria-hidden="true" className="text-fg-faint">/</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Link to="/events" className="hover:text-volt transition-colors">Events</Link>
+                <span aria-hidden="true" className="text-fg-faint">/</span>
+              </li>
+              <li><span aria-current="page" className="text-fg">{event.title}</span></li>
+            </ol>
+          </nav>
+          <p className="text-eyebrow uppercase tracking-[0.2em] text-volt mb-4">{eyebrow}</p>
+          <h1 className="font-display text-display-m font-semibold tracking-[-0.03em] leading-[0.92] text-cream max-w-[22ch]">
+            {event.title}
+          </h1>
+          {event.description && (
+            <p className="mt-6 max-w-[62ch] text-lead text-fg-muted">{event.description}</p>
+          )}
+          <p className="mt-6 text-meta text-fg-muted">
+            {formatDate(event.startDate)}{event.venue ? ` · ${event.venue}` : ""}{galleryCount > 0 ? ` · ${galleryCount} frames` : ""}
+          </p>
+          {galleryCount > 0 && (
+            <div className="mt-8">
               <Link
                 to={`/gallery/events/${event.slug}`}
-                className="text-cyan-400 transition hover:text-cyan-300"
+                className="inline-flex h-12 items-center rounded-full bg-volt px-6 text-body font-medium text-ink transition-[transform,box-shadow] duration-(--dur-fast) ease-out-quint motion-safe:hover:-translate-y-(--lift) hover:shadow-glow"
               >
-                View Full Gallery →
+                Open gallery
               </Link>
             </div>
+          )}
+        </div>
+      </section>
 
-            <div className="grid gap-6 md:grid-cols-3">
-              {gallery.images
-                .slice(0, 3)
-                .map((image) => (
-                  <div
-                    key={image.id}
-                    className="overflow-hidden rounded-2xl border border-white/10"
-                  >
-                    <img
-                      src={image.imageUrl}
-                      alt={image.caption}
-                      className="h-64 w-full object-cover"
-                    />
-                  </div>
-                ))}
+      {/* Detail panel */}
+      <section className="bg-abyss section-y">
+        <div className="shell">
+          <div className="grid gap-6 sm:grid-cols-3">
+            <div className="border-t border-line pt-4">
+              <p className="text-eyebrow uppercase tracking-[0.2em] text-fg-faint mb-2">Date</p>
+              <p className="font-display text-title text-fg">
+                <time dateTime={event.startDate}>{formatDate(event.startDate)}</time>
+              </p>
             </div>
+            <div className="border-t border-line pt-4">
+              <p className="text-eyebrow uppercase tracking-[0.2em] text-fg-faint mb-2">Status</p>
+              <p className="font-display text-title text-fg">{statusLabel}</p>
+            </div>
+            {event.venue && (
+              <div className="border-t border-line pt-4">
+                <p className="text-eyebrow uppercase tracking-[0.2em] text-fg-faint mb-2">Venue</p>
+                <p className="font-display text-title text-fg">{event.venue}</p>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    </section>
+        </div>
+      </section>
+
+      {/* NextStep */}
+      <section className="bg-abyss section-y border-t border-line">
+        <div className="shell">
+          <p className="text-eyebrow uppercase tracking-[0.2em] text-volt mb-4">NEXT</p>
+          <h2 className="font-display text-display-l font-semibold tracking-[-0.03em] leading-[0.92] text-cream max-w-[24ch] mb-6">
+            The rest of the calendar
+          </h2>
+          <ul className="space-y-3">
+            <li>
+              <Link to="/events" className="group inline-flex min-h-12 items-center text-title text-fg hover:text-volt transition-colors">
+                All events
+                <ArrowRight aria-hidden="true" className="ml-2 size-4 text-volt group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </li>
+            <li>
+              <Link to="/achievements" className="group inline-flex min-h-12 items-center text-title text-fg hover:text-volt transition-colors">
+                Achievements
+                <ArrowRight aria-hidden="true" className="ml-2 size-4 text-volt group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </section>
+    </>
   );
-};
+}
 
 export default EventDetailPage;

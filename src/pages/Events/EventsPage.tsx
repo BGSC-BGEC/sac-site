@@ -1,128 +1,135 @@
-import { CalendarDays, MapPin } from "lucide-react";
+// src/pages/Events/EventsPage.tsx
+
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import { getFeaturedEvent, getEventsByPhase, eventStatus } from "@/lib/content";
+import EventCard from "@/components/cards/EventCard";
 
-import { mockEvents } from "@/mock/mockEvents";
+function EventsPage() {
+  useDocumentTitle("Events · SAC Goa", "Tournaments, challenges and championships hosted by the Student Activity Centre at BITS Pilani Goa.");
+  const featured = getFeaturedEvent();
+  const { today, upcoming, past } = getEventsByPhase();
+  const featuredId = featured?.event.id;
 
-const EventsPage = () => {
-  const featuredEvent = mockEvents.find(
-    (event) => event.isFeatured
-  );
+  // de-duplicate: bands filter out the featured record
+  const todayList = today.filter((e) => e.id !== featuredId);
+  const upcomingList = upcoming.filter((e) => e.id !== featuredId);
+  const pastList = past;
 
   return (
-    <section className="min-h-screen bg-[#050816] py-16">
-      <div className="mx-auto max-w-7xl px-4">
-        {/* Hero */}
-        <div className="mb-16">
-          <h1 className="text-5xl font-bold text-white">
-            SAC Events
+    <>
+      {/* PageIntro */}
+      <section
+        className="mesh-teal relative isolate overflow-hidden bg-void
+                   pt-[calc(4.5rem+clamp(2rem,6vh,4rem))] pb-[var(--space-section)]"
+        style={{ "--mesh-strength": 0.35 } as React.CSSProperties}
+      >
+        <div className="relative z-10 mx-auto w-full max-w-(--container) px-(--gutter)">
+          <nav aria-label="Breadcrumb" className="mb-8">
+            <ol className="flex flex-wrap items-center gap-2 text-meta text-fg-muted">
+              <li className="flex items-center gap-2">
+                <Link to="/" className="hover:text-volt transition-colors">Home</Link>
+                <span aria-hidden="true" className="text-fg-faint">/</span>
+              </li>
+              <li><span aria-current="page" className="text-fg">Events</span></li>
+            </ol>
+          </nav>
+          <p className="text-eyebrow uppercase tracking-[0.2em] text-volt mb-4">CALENDAR</p>
+          <h1 className="font-display text-display-m font-semibold tracking-[-0.03em] leading-[0.92] text-cream max-w-[22ch]">
+            What the SAC runs
           </h1>
-
-          <p className="mt-4 max-w-2xl text-slate-400">
-            Discover tournaments, championships, fitness
-            challenges, and community events hosted by the
-            Sports Activities Centre.
+          <p className="mt-6 max-w-[62ch] text-lead text-fg-muted">
+            Tournaments, challenges and championships — the date, the venue, and what happened.
           </p>
+          <p className="mt-6 text-meta text-fg-muted">{today.length + upcoming.length + past.length} events</p>
         </div>
+      </section>
 
-        {/* Featured Event */}
-        {featuredEvent && (
-          <div className="mb-16">
-            <h2 className="mb-6 text-2xl font-semibold text-white">
-              Featured Event
-            </h2>
-
-            <Link
-              to={`/events/${featuredEvent.slug}`}
-              className="group overflow-hidden rounded-2xl border border-cyan-400/20 bg-[#09111f]"
-            >
-              <div className="grid lg:grid-cols-2">
-                <div className="overflow-hidden">
-                  <img
-                    src={featuredEvent.coverImageUrl}
-                    alt={featuredEvent.title}
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
-                </div>
-
-                <div className="p-8">
-                  <span className="inline-flex rounded-full bg-cyan-400/10 px-3 py-1 text-sm text-cyan-400">
-                    Featured
-                  </span>
-
-                  <h3 className="mt-4 text-3xl font-bold text-white">
-                    {featuredEvent.title}
-                  </h3>
-
-                  <p className="mt-4 text-slate-400">
-                    {featuredEvent.description}
-                  </p>
-
-                  <div className="mt-6 flex flex-col gap-3 text-slate-300">
-                    <div className="flex items-center gap-2">
-                      <CalendarDays className="h-4 w-4 text-cyan-400" />
-                      {featuredEvent.startDate}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-cyan-400" />
-                      {featuredEvent.venue}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Link>
+      {/* Featured */}
+      {featured && (
+        <section className="bg-abyss section-y">
+          <div className="shell">
+            <p className="text-eyebrow uppercase tracking-[0.2em] text-volt mb-6">FEATURED</p>
+            <EventCard event={featured.event} variant="hero" status={featured.status} />
           </div>
-        )}
+        </section>
+      )}
 
-        {/* Timeline */}
-        <div>
-          <h2 className="mb-8 text-2xl font-semibold text-white">
-            Upcoming Events
+      {/* Today */}
+      {todayList.length > 0 && (
+        <section className="bg-void section-y">
+          <div className="shell">
+            <h2 className="text-eyebrow uppercase tracking-[0.2em] text-fg-muted mb-6">Today at the SAC</h2>
+            <ul className="space-y-4">
+              {todayList.map((e) => (
+                <li key={e.id}><EventCard event={e} variant="row" status={eventStatus(e)} /></li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {/* Coming up */}
+      <section className="bg-abyss section-y">
+        <div className="shell">
+          <h2 className="text-eyebrow uppercase tracking-[0.2em] text-fg-muted mb-6">Coming up</h2>
+          {upcomingList.length > 0 ? (
+            <ul className="space-y-4">
+              {upcomingList.map((e) => (
+                <li key={e.id}><EventCard event={e} variant="row" status={eventStatus(e)} /></li>
+              ))}
+            </ul>
+          ) : (
+            <div className="rounded-lg border border-dashed border-line bg-deep px-6 py-14 text-center">
+              <p className="text-lead font-semibold text-fg">No upcoming events</p>
+              <p className="mt-2 text-meta text-fg-muted max-w-[42ch] mx-auto">
+                Nothing is scheduled right now. Everything already run is listed below.
+              </p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Already run */}
+      {pastList.length > 0 && (
+        <section className="bg-void section-y">
+          <div className="shell">
+            <h2 className="text-eyebrow uppercase tracking-[0.2em] text-fg-muted mb-6">Already run</h2>
+            <ul className="space-y-4">
+              {pastList.map((e) => (
+                <li key={e.id}><EventCard event={e} variant="row" status="past" /></li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
+
+      {/* NextStep */}
+      <section className="bg-abyss section-y border-t border-line">
+        <div className="shell">
+          <p className="text-eyebrow uppercase tracking-[0.2em] text-volt mb-4">NEXT</p>
+          <h2 className="font-display text-display-l font-semibold tracking-[-0.03em] leading-[0.92] text-cream max-w-[24ch] mb-6">
+            See how they looked
           </h2>
-
-          <div className="space-y-6">
-            {mockEvents.map((event) => (
-              <Link
-                key={event.id}
-                to={`/events/${event.slug}`}
-                className="group block rounded-2xl border border-white/10 bg-[#09111f] p-6 transition hover:border-cyan-400/40"
-              >
-                <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div>
-                    <div className="mb-3">
-                      <span className="rounded-full bg-cyan-400/10 px-3 py-1 text-xs text-cyan-400">
-                        Event
-                      </span>
-                    </div>
-
-                    <h3 className="text-xl font-semibold text-white">
-                      {event.title}
-                    </h3>
-
-                    <p className="mt-2 text-slate-400">
-                      {event.description}
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col gap-2 text-sm text-slate-300">
-                    <div className="flex items-center gap-2">
-                      <CalendarDays className="h-4 w-4 text-cyan-400" />
-                      {event.startDate}
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-cyan-400" />
-                      {event.venue}
-                    </div>
-                  </div>
-                </div>
+          <ul className="space-y-3">
+            <li>
+              <Link to="/gallery/events" className="group inline-flex min-h-12 items-center text-title text-fg hover:text-volt transition-colors">
+                Event galleries
+                <ArrowRight aria-hidden="true" className="ml-2 size-4 text-volt group-hover:translate-x-1 transition-transform" />
               </Link>
-            ))}
-          </div>
+            </li>
+            <li>
+              <Link to="/achievements" className="group inline-flex min-h-12 items-center text-title text-fg hover:text-volt transition-colors">
+                Achievements
+                <ArrowRight aria-hidden="true" className="ml-2 size-4 text-volt group-hover:translate-x-1 transition-transform" />
+              </Link>
+            </li>
+          </ul>
         </div>
-      </div>
-    </section>
+      </section>
+    </>
   );
-};
+}
 
 export default EventsPage;
